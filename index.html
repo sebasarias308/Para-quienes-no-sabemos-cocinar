@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Para quienes no sabemos cocinar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--sage:#CDD6BE;--green:#6B766A;--taupe:#918A7A;--brown:#756455;
+--bg:#EEF1E7;--ink:#3E352D;--soft:#6B766A;--line:#CDD6BE;--panel:#E3E8D8;--accent:#6B766A;--on-accent:#F6F8F1;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#262B25;--ink:#E7EADC;--soft:#B3BBA6;--line:#47503F;--panel:#30372E;--accent:#CDD6BE;--on-accent:#262B25}}
+:root[data-theme="dark"]{--bg:#262B25;--ink:#E7EADC;--soft:#B3BBA6;--line:#47503F;--panel:#30372E;--accent:#CDD6BE;--on-accent:#262B25}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.55 "DM Sans",system-ui,sans-serif;min-height:100vh}
+main{max-width:640px;margin:0 auto;padding:28px 20px 64px}
+.bar{display:flex;gap:6px;margin-bottom:36px}
+.bar i{flex:1;height:5px;border-radius:3px;background:var(--line)}
+.bar i.on{background:var(--brown)}
+@media (prefers-color-scheme:dark){.bar i.on{background:var(--taupe)}}
+h1,h2,h3{font-family:Fraunces,Georgia,serif;font-weight:700;line-height:1.15;margin:0}
+h1{font-size:2.2rem;margin-bottom:12px}
+h2{font-size:2rem;color:var(--ink)}
+.sub{color:var(--soft);margin:10px 0 26px;max-width:46ch}
+.q{font-size:1.15rem;margin:0 0 18px;font-weight:500}
+.opts{display:grid;gap:10px}
+button{font:inherit;color:inherit;cursor:pointer}
+.opt{text-align:left;padding:14px 18px;border:2px solid var(--line);background:transparent;border-radius:14px;transition:background .15s,border-color .15s}
+.opt:hover{border-color:var(--green)}
+.opt.sel{background:var(--green);border-color:var(--green);color:#F6F8F1}
+.go{margin-top:20px;padding:13px 26px;border:0;border-radius:999px;background:var(--accent);color:var(--on-accent);font-weight:700}
+.go:disabled{opacity:.4;cursor:default}
+.ghost{background:none;border:0;color:var(--soft);padding:8px 0;margin-top:22px;text-decoration:underline}
+textarea,input[type=text]{width:100%;font:inherit;color:inherit;background:var(--panel);border:2px solid var(--line);border-radius:14px;padding:13px 16px}
+textarea{min-height:120px;resize:vertical}
+:focus-visible{outline:3px solid var(--brown);outline-offset:2px}
+.recipe{display:block;width:100%;text-align:left;padding:18px 20px;margin-bottom:12px;border-radius:16px;border:2px solid var(--line);background:var(--panel)}
+.recipe:hover{border-color:var(--green)}
+.recipe h3{font-size:1.3rem;margin-bottom:4px}
+.recipe p{margin:0;color:var(--soft)}
+.meta{display:flex;gap:16px;flex-wrap:wrap;color:var(--brown);font-weight:700;font-size:.92rem;margin-top:10px}
+@media (prefers-color-scheme:dark){.meta{color:var(--taupe)}}
+.chip{display:inline-block;padding:3px 11px;border-radius:999px;background:var(--sage);color:#3E352D;font-size:.9rem;margin:0 6px 6px 0}
+ol.steps{padding:0;margin:18px 0 0;list-style:none;counter-reset:s}
+ol.steps li{counter-increment:s;position:relative;padding:0 0 22px 52px}
+ol.steps li::before{content:counter(s);position:absolute;left:0;top:0;width:36px;height:36px;border-radius:50%;background:var(--brown);color:#F6F8F1;display:grid;place-items:center;font:700 1rem Fraunces,serif}
+.load{padding:60px 0;text-align:center;color:var(--soft)}
+.pot{width:56px;height:56px;margin:0 auto 18px;animation:bob 1.2s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-8px) rotate(-4deg)}}
+@media (prefers-reduced-motion:reduce){.pot{animation:none}}
+.steam{display:inline-block;width:22px;height:22px;vertical-align:-4px;margin-right:6px}.steam path{stroke:var(--brown);stroke-width:2.5;fill:none;stroke-linecap:round;animation:rise 2s ease-in-out infinite}.steam path:nth-child(2){animation-delay:.4s}
+@keyframes rise{0%,100%{opacity:.3;transform:translateY(2px)}50%{opacity:1;transform:translateY(-2px)}}
+@media (prefers-reduced-motion:reduce){.steam path{animation:none}}
+footer{margin-top:48px;padding-top:16px;border-top:1px solid var(--line);font-size:.82rem;color:var(--soft);text-align:center}
+a.vid{display:inline-block;margin-top:6px;color:var(--accent);font-weight:700}
+.err{color:var(--brown);background:var(--panel);padding:14px 18px;border-radius:14px}
+</style>
+</head>
+<body>
+<main id="app" aria-live="polite"></main>
+<script>
+const app=document.getElementById('app');
+let A={},i=0,view='welcome',recetas=[],receta=null,msg='';
+const POT='<svg class="pot" viewBox="0 0 64 64" fill="none" stroke="#756455" stroke-width="3" stroke-linecap="round"><path d="M12 28h40v16a10 10 0 0 1-10 10H22a10 10 0 0 1-10-10V28Z" fill="#CDD6BE"/><path d="M8 28h48M24 14c-3 3 3 5 0 8M34 12c-3 3 3 5 0 8M44 14c-3 3 3 5 0 8"/></svg>';
+const plural=()=>A.personas&&A.personas!=='Solo yo';
+const pl=(s,p)=>plural()?p:s;
+const PERS=['Solo yo','Somos dos','Entre dos y cinco','Entre cinco y diez','Más de diez'];
+const S={
+ahora:{t:'Primero lo primero',q:()=>'¿Tu preparación es para este momento?',o:()=>['Sí','No']},
+cuando:{t:'Pongamos fecha',q:()=>'¿Cuándo vas a cocinar?',o:()=>['Hoy más tarde','Mañana','En un evento']},
+evento:{t:'Cuéntame del plan',q:()=>'¿Qué tipo de evento es?',txt:1,ph:'Cumpleaños, almuerzo familiar, comida con amigos…'},
+personas:{t:'¿Cuántos a la mesa?',q:()=>'¿Para cuántas personas vas a cocinar?',o:()=>PERS},
+hambre:{t:'Midamos el hambre',q:()=>'¿Qué tanta hambre '+pl('tienes','tienen')+'?',o:()=>['Mucha','No mucha','Normal','Poca','Muy poca']},
+comida:{t:'¿A qué hora del día?',q:()=>'¿Qué comida será?',o:()=>['Desayuno','Entre almuerzo y desayuno','Almuerzo','Entre almuerzo y comida','Comida'].concat(A.ahora==='Sí'?['Es un antojo']:[])},
+gustos:{t:'Hablemos de sabores',q:()=>'¿Qué tipo de platos '+pl('prefieres','prefieren')+'?',multi:1,o:()=>['Prefiero platos salados','Prefiero platos picantes','Prefiero platos ácidos','Prefiero platos dulces','Platos con poca complejidad','Platos con varias preparaciones'].map(x=>plural()?x.replace('Prefiero','Preferimos'):x)},
+tiempo:{t:'El tiempo es oro',q:()=>'¿Qué tanto tiempo '+pl('tienes','tienen')+' para cocinar?',o:()=>['No importa el tiempo','Más de dos horas','Entre dos y una hora','Una hora','Menos de una hora']},
+tipo:{t:'¿Cómo se sirve?',q:()=>'¿Qué tipo de plato '+pl('buscas','buscan')+'?',o:()=>['Algo que se pueda compartir','Algo que sea mucho y se sirva individual','Algo en lo que cada persona elija qué comer','Ninguna de las anteriores']},
+tipo_otro:{t:'Dime más',q:()=>'¿Qué tipo de plato '+pl('buscas','buscan')+'?',txt:1,ph:'Describe el plato que tienes en mente'},
+ingredientes:{t:'Abramos la nevera',q:()=>'¿Qué ingredientes '+pl('tienes','tienen')+'?',txt:1,area:1,ph:'Arroz, huevos, tomate, cebolla, pollo…'},
+restriccion:{t:'Lo que no se come',q:()=>'¿'+pl('Tienes','Tienen')+' alguna restricción alimenticia?',o:()=>['Sí','No']},
+restric_txt:{t:'Anotado, cuéntame cuáles',q:()=>'¿Qué restricciones '+pl('tienes','tienen')+'?',txt:1,ph:'Vegetariano, sin gluten, alergia a las nueces…'}
+};
+function flow(){
+ const f=['ahora'];
+ if(A.ahora==='No'){f.push('cuando');if(A.cuando==='En un evento')f.push('evento');}
+ f.push('personas');
+ if(A.ahora==='Sí'){f.push('hambre','comida','gustos','tiempo');}
+ else if(A.personas==='Solo yo'){f.push('gustos','tiempo','comida');}
+ else{f.push('tipo');if(A.tipo==='Ninguna de las anteriores')f.push('tipo_otro');f.push('comida');}
+ f.push('ingredientes','restriccion');
+ if(A.restriccion==='Sí')f.push('restric_txt');
+ return f;
+}
+function h(tag,props,...kids){const e=document.createElement(tag);for(const k in props||{}){if(k==='onclick')e.onclick=props[k];else if(k==='class')e.className=props[k];else e[k]=props[k];}kids.flat().forEach(c=>e.append(c&&c.nodeType?c:document.createTextNode(c==null?'':c)));return e;}
+function svgHTML(){const d=document.createElement('div');d.innerHTML=POT;return d.firstChild;}
+function draw(...nodes){app.replaceChildren(...nodes,h('footer',{},'Artefacto diseñado por Sebastian Arias Pajon. Protegido por derechos de autor.'));window.scrollTo(0,0);}
+function render(){
+ if(view==='load')return draw(h('div',{class:'load'},svgHTML(),msg));
+ if(view==='err')return draw(h('h2',{},'Algo se quemó'),h('p',{class:'err'},msg),h('button',{class:'go',onclick:()=>{view='quiz';render();}},'Volver a intentar'));
+ if(view==='welcome')return draw(h('div',{style:'text-align:center;margin:30px 0 10px'},svgHTML()),h('h1',{style:'text-align:center'},'Para quienes no sabemos cocinar'),h('p',{class:'sub',style:'margin:10px auto 8px;text-align:center'},'¡Bienvenido a tu cocina! Aquí nadie nace sabiendo. Este artefacto te ayuda a elegir, guiar y acompañar tu preparación según lo que te gusta, los productos que tengas, el tiempo y el hambre.'),h('p',{class:'sub',style:'margin:0 auto 20px;text-align:center'},'Te haré unas preguntas rápidas y luego te llevo paso a paso. Cuando estés listo, empezamos.'),h('div',{style:'text-align:center'},h('button',{class:'go',onclick:()=>{view='quiz';render();}},'Empezar')));
+ if(view==='list')return list();
+ if(view==='receta')return paso();
+ const f=flow(),id=f[i],s=S[id];
+ const bar=h('div',{class:'bar'},f.map((_,k)=>h('i',{class:k<=i?'on':''})));
+ const nodes=[bar];
+ 
+ nodes.push(h('h2',{},s.t),h('p',{class:'q',style:'margin-top:14px'},s.q()));
+ if(s.txt){
+  const el=s.area?h('textarea',{placeholder:s.ph,value:A[id]||'',ariaLabel:s.q()}):h('input',{type:'text',placeholder:s.ph,value:A[id]||'',ariaLabel:s.q()});
+  const b=h('button',{class:'go',onclick:()=>{A[id]=el.value.trim();next();}},id==='restric_txt'||id==='ingredientes'&&flow().slice(-1)[0]==='restriccion'&&false?'Buscar recetas':'Seguir');
+  const upd=()=>b.disabled=!el.value.trim();el.oninput=upd;upd();
+  nodes.push(el,b);
+ }else if(s.multi){
+  const sel=new Set(A[id]||[]);
+  const b=h('button',{class:'go',disabled:!sel.size,onclick:()=>{A[id]=[...sel];next();}},'Seguir');
+  nodes.push(h('div',{class:'opts'},s.o().map(o=>{const bt=h('button',{class:'opt'+(sel.has(o)?' sel':''),onclick:()=>{sel.has(o)?sel.delete(o):sel.add(o);bt.classList.toggle('sel');b.disabled=!sel.size;}},o);bt.setAttribute('aria-pressed',sel.has(o));return bt;})),b);
+ }else{
+  nodes.push(h('div',{class:'opts'},s.o().map(o=>h('button',{class:'opt'+(A[id]===o?' sel':''),onclick:()=>{A[id]=o;if(id==='ahora'||id==='cuando'||id==='personas'||id==='tipo'||id==='restriccion'){trim(id);}next();}},o))));
+ }
+ if(i>0)nodes.push(h('button',{class:'ghost',onclick:()=>{i--;render();}},'Volver'));
+ draw(...nodes);
+}
+function trim(id){ // al cambiar una respuesta que define el camino, borra las que ya no aplican
+ if(id==='ahora')['cuando','evento','hambre','comida','gustos','tiempo','tipo','tipo_otro'].forEach(k=>delete A[k]);
+ if(id==='personas')['gustos','tiempo','tipo','tipo_otro'].forEach(k=>delete A[k]);
+}
+function next(){
+ const f=flow();
+ if(i<f.length-1){i++;render();}else buscar();
+}
+function resumen(){
+ const l=[];
+ l.push('¿Es para ahora?: '+A.ahora);
+ if(A.cuando)l.push('Cuándo: '+A.cuando+(A.evento?' ('+A.evento+')':''));
+ l.push('Personas: '+A.personas);
+ if(A.hambre)l.push('Hambre: '+A.hambre);
+ l.push('Comida: '+A.comida);
+ if(A.gustos)l.push('Preferencias: '+A.gustos.join(', '));
+ if(A.tiempo)l.push('Tiempo disponible: '+A.tiempo);
+ if(A.tipo)l.push('Tipo de plato: '+(A.tipo_otro||A.tipo));
+ l.push('Ingredientes disponibles: '+A.ingredientes);
+ l.push('Restricciones: '+(A.restriccion==='Sí'?A.restric_txt:'ninguna'));
+ return l.join('\n');
+}
+async function ask(prompt){
+ const sample=await claude.use('sample');
+ if(!sample)throw {message:'Esta vista no puede generar recetas. Abre el artefacto desde claude.ai.'};
+ return sample.json(prompt,{modelTier:'default'});
+}
+async function buscar(){
+ view='load';msg='Revisando recetarios…';render();
+ try{
+  const r=await ask('Eres un asistente de cocina para personas que no saben cocinar. Con estas respuestas:\n'+resumen()+'\n\nPropón entre 2 y 5 recetas reales y conocidas, ordenadas de la que mejor encaja a la que menos (usa menos opciones si pocas encajan de verdad). Respeta SIEMPRE las restricciones alimenticias, el tiempo y las porciones para el número de personas. Prioriza los ingredientes que ya tienen. Responde SOLO JSON con este formato: {"opciones":[{"nombre":"","resumen":"una frase","minutos":0,"porciones":0,"dificultad":"Fácil|Media","tienes":["ingredientes que ya tiene"],"faltan":["ingredientes que faltan"]}]}');
+  recetas=r.opciones||[];
+  if(!recetas.length)throw {message:'No encontré recetas que encajen. Prueba con más ingredientes.'};
+  view='list';render();
+ }catch(e){view='err';msg=e.message||'No pude buscar recetas. Inténtalo de nuevo.';render();}
+}
+function list(){
+ draw(h('h2',{},'Esto puedes cocinar'),h('p',{class:'sub'},'Ordenadas de la que mejor encaja a la que menos. Elige una y te llevo paso a paso.'),
+ ...recetas.map(r=>h('button',{class:'recipe',onclick:()=>elegir(r)},h('h3',{},r.nombre),h('p',{},r.resumen),
+  h('div',{class:'meta'},h('span',{},(r.minutos||'?')+' min'),h('span',{},(r.porciones||'?')+' porciones'),h('span',{},r.dificultad||'')),
+  r.faltan&&r.faltan.length?h('p',{style:'margin-top:10px;font-size:.92rem'},'Te falta: '+r.faltan.join(', ')):h('p',{style:'margin-top:10px;font-size:.92rem'},'Ya tienes todo'))),
+ h('button',{class:'ghost',onclick:reiniciar},'Empezar de nuevo'));
+}
+async function elegir(r){
+ view='load';msg='Armando el paso a paso…';render();
+ try{
+  const d=await ask('Escribe la receta "'+r.nombre+'" para '+r.porciones+' porciones, para alguien que NO sabe cocinar: pasos cortos y claros, con tiempos, fuego (bajo/medio/alto) y señales para saber que está listo. Contexto:\n'+resumen()+'\nResponde SOLO JSON: {"ingredientes":["cantidad + ingrediente"],"pasos":["texto"],"consejo":"un consejo corto"}');
+  receta={...r,...d};view='receta';render();
+ }catch(e){view='err';msg=e.message||'No pude armar la receta.';render();}
+}
+function paso(){
+ const r=receta;
+ draw(h('h2',{},r.nombre),h('p',{class:'sub'},(r.minutos||'?')+' min · '+(r.porciones||'?')+' porciones'),
+ h('h3',{style:'font-size:1.2rem;margin-bottom:10px'},'Ingredientes'),
+ h('div',{},(r.ingredientes||[]).map(x=>h('span',{class:'chip'},x))),
+ h('h3',{style:'font-size:1.2rem;margin-top:26px'},'Paso a paso'),
+ h('ol',{class:'steps'},(r.pasos||[]).map(p=>h('li',{},p))),
+ h('p',{},h('a',{class:'vid',href:'https://www.youtube.com/results?search_query='+encodeURIComponent('cómo hacer '+r.nombre+' receta fácil'),target:'_blank',rel:'noopener'},'▶ Ver cómo se hace en video')),
+ r.consejo?h('p',{class:'err'},h('b',{},'Consejo: '),r.consejo):'',
+ h('button',{class:'go',onclick:()=>{view='list';render();}},'Ver otras opciones'),
+ h('div',{},h('button',{class:'ghost',onclick:reiniciar},'Empezar de nuevo')));
+}
+function reiniciar(){A={};i=0;view='welcome';recetas=[];receta=null;render();}
+render();
+</script>
+</body>
+</html>
